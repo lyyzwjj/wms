@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- 配置安全管理器SecurityManager -->
+    <bean id="employeeRealm" class="cn.wolfcode.wms.shiro.EmployeeRealm">
+        <!--引入员工的service操作-->
+        <property name="employeeService" ref="employeeService"></property>
+        <property name="roleService" ref="roleService"></property>
+        <property name="permissionService" ref="permissionService"></property>
+        <!--配置加密凭证-->
+        <property name="credentialsMatcher" ref="credentialsMatcher" />
+    </bean>
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="employeeRealm"/>
+        <property name="cacheManager" ref="cacheManager"/>
+    </bean>
+    <!-- 定义ShiroFilter -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"/>
+        <property name="loginUrl" value="/login"/>
+        <property name="successUrl" value="/main"/>
+        <property name="unauthorizedUrl" value="/nopermission.jsp"/>
+        <property name="filterChainDefinitions">
+            <value>
+                <!--静态资源anno-->
+                /js/**=anon
+                /images/**=anon
+                /style/**=anon
+                /favicon.ico=anon
+                <!--注销logout-->
+                /logout=logout
+                <!--登录检查及帮助登录authc-->
+                /**=authc
+            </value>
+        </property>
+    </bean>
+
+    <bean id="cacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        <property name="cacheManager" ref="ehCacheManager"/>
+    </bean>
+    <bean id="ehCacheManager" class ="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:shiro-ehcache.xml" />
+        <property name="shared" value="true"></property>
+    </bean>
+    <!--加密器-->
+    <bean id="credentialsMatcher"
+          class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+        <property name="hashAlgorithmName" value="md5" />
+        <property name="hashIterations" value="1" />
+    </bean>
+
+</beans>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.EmployeeMapper">
+	<insert id="save" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		INSERT INTO
+		employee(name,password,email,age,admin,dept_id)
+		VALUES(#{name},#{password},#{email},#{age},#{admin},#{department.id});
+	</insert>
+	<delete id="delete">
+		DELETE FROM employee WHERE id = #{id};
+	</delete>
+	<update id="update">
+		UPDATE employee
+		SET
+		name = #{name},
+		email = #{email},
+		age = #{age},
+		admin = #{admin},
+		dept_id = #{department.id}
+		WHERE id = #{id};
+	</update>
+	<resultMap type="Employee" id="baseResultMapper">
+	<id property="id" column="id" />
+	<result property="name" column="name" />
+	<result property="password" column="password" />
+	<result property="email" column="email" />
+	<result property="age" column="age" />
+	<result property="admin" column="admin" />
+	<association property="department" javaType="Department" columnPrefix="d_">
+	<id property="id" column="id" />
+	<result property="name" column="name" />
+	<result property="sn" column="sn" />
+	</association>
+	<collection property="roles" ofType="Role" select="cn.wolfcode.wms.mapper.RoleMapper.selectByEmployeeId" column="id"></collection>
+	</resultMap>
+	<select id="get" resultMap="baseResultMapper">
+		SELECT e.id,e.name,e.password,e.email,e.age,e.admin,
+			d.id d_id,d.name d_name,d.sn d_sn
+		FROM employee e 
+			LEFT JOIN department d ON e.dept_id = d.id 
+		WHERE e.id = #{id};
+	</select>
+	<sql id="base_where">
+		<where>
+		<if test="keywords != null">
+		and (e.name like concat("%",#{keywords},"%") or e.email like concat("%",#{keywords},"%"))
+		</if>
+		<if test="deptId > 0">
+		and e.dept_id = #{deptId} 
+		</if>
+		</where>
+	</sql>
+	<select id="list" resultMap="baseResultMapper">
+		SELECT id,name,sn FROM employee;
+	</select>
+	<select id="queryForCount" resultType="int">
+	SELECT count(e.id) FROM
+		employee e 
+			LEFT JOIN department d ON e.dept_id = d.id
+			<include refid="base_where"/>
+	</select>
+	<select id="queryForList" resultMap="baseResultMapper">
+		SELECT e.id,e.name,e.password,e.email,e.age,e.admin,
+			d.id d_id,d.name d_name,d.sn d_sn
+		FROM employee e 
+			LEFT JOIN department d ON e.dept_id = d.id
+		<include refid="base_where"/>
+		LIMIT #{startIndex}, #{pageSize};
+	</select>
+	<delete id="deleteEmployeeRoleRelation">
+		DELETE FROM employee_role WHERE employee_id = #{id}
+	</delete>
+	<insert id="saveEmployeeRoleRelation">
+		INSERT INTO employee_role() VALUES(#{id},#{roleId})
+	</insert>
+	<select id="selectByUsernameAndPassword" resultType="Employee">
+		SELECT * FROM employee WHERE (name = #{username} AND password = #{password})
+	</select>
+	<select id="selectByUsername" resultType="Employee">
+		SELECT * FROM employee WHERE name = #{username}
+	</select>
+	<select id="selectAllExpressionByEmployeeId" resultType="string">
+		SELECT expression FROM permission WHERE id IN (
+			SELECT permission_id FROM role_permission WHERE role_id IN (
+				SELECT role_id  FROM employee_role WHERE employee_id = #{id}
+			) 
+		)
+	</select>
+
+	<delete id="batchDelete">
+		DELETE FROM employee WHERE id IN 
+		<foreach collection="array"  open="(" item="id" separator="," close=")">
+		#{id}
+		</foreach>
+	</delete>
+</mapper>

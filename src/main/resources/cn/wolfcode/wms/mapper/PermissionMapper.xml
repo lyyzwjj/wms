@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.PermissionMapper">
+	<insert id="save">
+		INSERT INTO
+		permission(name,expression)
+		VALUES(#{name},#{expression});
+	</insert>
+	<delete id="delete">
+		DELETE FROM permission WHERE id = #{id};
+	</delete>
+	<update id="update">
+		UPDATE permission
+		SET
+		name = #{name},expression = #{expression}
+		WHERE id = #{id};
+	</update>
+	<select id="get" resultType="Permission">
+		SELECT id,name,expression FROM permission WHERE id = #{id};
+	</select>
+	<select id="list" resultType="Permission">
+		SELECT id,name,expression FROM permission;
+	</select>
+	<select id="queryForCount" resultType="int">
+	SELECT count(*) FROM permission
+	
+	</select>
+	<select id="queryForList" resultType="Permission">
+		SELECT id,name,expression FROM permission limit #{startIndex}, #{pageSize};
+	</select>
+	<select id="selectByRoleId" resultType="Permission">
+		SELECT id,name,expression FROM permission
+		WHERE id IN (
+			SELECT permission_id FROM role_permission WHERE role_id = #{id}
+		)
+	</select>
+	<select id="selectAllExpressions" resultType="java.lang.String">
+		SELECT expression FROM permission;
+	</select>
+	<select id="selectAllExpressionsByEmployeeId" resultType="java.lang.String">
+	SELECT expression FROM permission
+	WHERE id IN (
+		SELECT permission_id FROM role_permission WHERE role_id IN (
+			SELECT role_id FROM employee_role WHERE employee_id = #{id}
+		)
+	)
+	</select>
+</mapper>

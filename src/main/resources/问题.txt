@@ -1,0 +1,15 @@
+李俊涛
+	Inteceptor Object Handler 怎么来的
+	问题sql语句不是很熟练
+龙伟健 
+	拦截器以及作用域问题
+	对前后台数据传递及具体前台页面js不是很熟悉,不善于表达
+陈芬
+	LoginController中login方法 为什么只需要trycatch 而不需要employeeService层返回参数
+	基本上了解,对maven工具不熟悉
+张科
+
+BUG
+	张科 登录中文+密码能登录
+		登录英文+密码不能登录
+	李俊涛 selectAllExpressionByEmployeeId 中sql语句

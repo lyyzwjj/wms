@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.SystemMenuMapper">
+    <insert id="save">
+        INSERT INTO
+            systemmenu (name, url, sn, parent_id)
+        VALUES (#{name}, #{url}, #{sn}, #{parent.id});
+    </insert>
+    <delete id="delete">
+        DELETE FROM systemmenu
+        WHERE id = #{id};
+    </delete>
+    <update id="update">
+        UPDATE systemmenu
+        SET
+            name      = #{name},
+            url       = #{url},
+            sn        = #{sn},
+            parent_id = #{parent.id}
+        WHERE id = #{id};
+    </update>
+    <resultMap type="SystemMenu" id="baseResultMapper">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="url" column="url"/>
+        <result property="sn" column="sn"/>
+        <association property="parent" javaType="SystemMenu" column="parent_id" select="get">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="url" column="url"/>
+            <result property="sn" column="sn"/>
+        </association>
+    </resultMap>
+    <sql id="base_where">
+        <where>
+            <if test="parentId == null">
+                parent_id IS NULL
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId}
+            </if>
+        </where>
+    </sql>
+    <select id="get" resultMap="baseResultMapper">
+        SELECT
+            id,
+            name,
+            url,
+            sn,
+            parent_id
+        FROM systemmenu
+        WHERE id = #{id};
+    </select>
+    <select id="list" resultType="SystemMenu">
+        SELECT
+            id,
+            name,
+            url,
+            sn
+        FROM systemmenu;
+    </select>
+    <select id="queryForCount" resultType="int">
+        SELECT count(*) FROM systemmenu
+        <include refid="base_where"/>
+    </select>
+    <select id="queryForList" resultMap="baseResultMapper">
+        SELECT id,name,url,sn,parent_id FROM systemmenu
+        <include refid="base_where"/>
+        limit #{startIndex}, #{pageSize};
+    </select>
+    <select id="selectByParentSn" resultType="map">
+        SELECT child.id,parent.id pId,child.name, child.url controller
+        FROM systemmenu child LEFT JOIN systemmenu parent ON parent.id = child.parent_id
+        WHERE parent.sn = #{parentSn}
+    </select>
+    <select id="selectByParentSnAndEmplyeeId" resultType="map">
+        SELECT child.id,parent.id pId,child.name, parent.url controller
+        FROM systemmenu child LEFT JOIN systemmenu parent ON parent.id = child.parent_id
+            JOIN role_menu rm ON child.id = rm.menu_id
+            JOIN employee_role er ON rm.role_id = er.employee_id
+        WHERE er.employee_id = #{empId} AND child.parent_id = #{parentId}
+    </select>
+    <select id="selectByRoleId" resultType="SystemMenu">
+        SELECT id,name,url,sn,parent_id FROM systemmenu
+        WHERE id IN (
+        SELECT menu_id FROM role_menu WHERE role_id = #{id}
+        )
+    </select>
+</mapper>

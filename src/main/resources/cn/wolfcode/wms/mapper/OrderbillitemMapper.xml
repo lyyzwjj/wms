@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.wms.mapper.OrderbillitemMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.wms.domain.Orderbillitem" >
+    <id column="id" property="id" />
+    <result column="cost_price" property="costPrice" />
+    <result column="number" property="number" />
+    <result column="amount" property="amount" />
+    <result column="remark" property="remark" />
+    <result column="bill_id" property="billId" />
+    <association property="product" javaType="Product" columnPrefix="p_">
+	<result property="id" column="id" />
+    <result property="name" column="name" />
+	<result property="costPrice" column="costPrice" />
+	<result property="brandName" column="brandName" />
+    </association>
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `orderbillitem`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.wms.domain.Orderbillitem" useGeneratedKeys="true" keyProperty="id" >
+    insert into `orderbillitem` (cost_price, number, amount, remark, product_id, bill_id)
+    values (#{costPrice}, #{number}, #{amount}, #{remark}, #{product.id}, #{billId})
+  </insert>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select o.id, o.cost_price, o.number, o.amount, o.remark, o.product_id, o.bill_id,p.id p_id,p.name p_name,p.brand_name p_brandName,p.cost_price p_costPrice
+    from orderbillitem o
+    left join product p on o.product_id = p.id
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select o.id, o.cost_price, o.number, o.amount, o.remark, o.product_id, o.bill_id,p.id p_id,p.name p_name,p.brand_name p_brandName,p.cost_price p_costPrice
+    from orderbillitem o
+    left join product p on o.product_id = p.id
+  </select>
+  <select id="selectByOrderBillId" resultMap="BaseResultMap">
+    select o.id, o.cost_price, o.number, o.amount, o.remark, o.product_id, o.bill_id,p.id p_id,p.name p_name,p.brand_name p_brandName,p.cost_price p_costPrice
+    from orderbillitem o
+    left join product p on o.product_id = p.id
+    where o.bill_id = #{billId}
+  </select>
+  <delete id="deleteByOrderBillId">
+  	delete from `orderbillitem`
+    where bill_id = #{id}
+  </delete>
+</mapper>

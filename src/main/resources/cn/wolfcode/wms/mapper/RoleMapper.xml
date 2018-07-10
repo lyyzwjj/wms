@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.wms.mapper.RoleMapper">
+	<insert id="save" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		INSERT INTO
+		role(name,sn)
+		VALUES(#{name},#{sn});
+	</insert>
+	<delete id="delete">
+		DELETE FROM role WHERE id = #{id};
+	</delete>
+	<update id="update">
+		UPDATE role
+		SET
+		name = #{name},sn = #{sn}
+		WHERE id = #{id};
+	</update>
+	<resultMap type="Role" id="baseResultMap">
+	<id property="id" column="id" />
+	<result property="name" column="name" />
+	<result property="sn" column="sn" />
+	<collection property="permissions" ofType="Permission" column="id" select="cn.wolfcode.wms.mapper.PermissionMapper.selectByRoleId">
+	</collection>
+	<collection property="menus" select="cn.wolfcode.wms.mapper.SystemMenuMapper.selectByRoleId" column="id" ofType="SystemMenu">
+	</collection>
+	</resultMap>
+	<select id="get" resultMap="baseResultMap" >
+		SELECT id,name,sn
+		FROM role
+		WHERE id = #{id};
+	</select>
+	<select id="list" resultMap="baseResultMap">
+		SELECT id,name,sn FROM role;
+	</select>
+	<select id="queryForCount" resultType="int">
+	SELECT count(*) FROM role
+	
+	</select>
+	<select id="queryForList" resultType="Role">
+		SELECT id,name,sn FROM role limit #{startIndex}, #{pageSize};
+	</select>
+	<insert id="saveRolePermissionRelation">
+		INSERT INTO role_permission() VALUES(#{roleId},#{departmentId})
+	</insert>
+	<delete id="deleteRolePermissionRelation">
+		DELETE FROM role_permission WHERE role_id = #{id}
+	</delete>
+	<insert id="saveRoleMenuRelation">
+		INSERT INTO role_menu VALUES(#{roleId},#{menuId})
+	</insert>
+	<delete id="deleteRoleMenuRelation">
+		DELETE FROM role_menu WHERE role_id = #{id}
+	</delete>
+	<select id="selectByEmployeeId" resultType="Role">
+	SELECT id,name,sn FROM role WHERE id IN (
+		SELECT role_id FROM employee_role WHERE employee_id = #{id}
+	)
+	</select>
+</mapper>
